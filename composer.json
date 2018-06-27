@@ -1,0 +1,22 @@
+{
+    "name": "cblink/tencent-ai",
+    "description": "Tencent AI SDK",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mingyoung",
+            "email": "mingyoungcheung@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "guzzlehttp/guzzle": "^6.3",
+        "pimple/pimple": "^3.2",
+        "adbario/php-dot-notation": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cblink\\TencentAI\\": "src/"
+        }
+    }
+}
