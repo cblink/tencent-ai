@@ -6,22 +6,60 @@ use GuzzleHttp\Client;
 
 trait MakesHttpRequests
 {
-    protected $httpClient;
-
-    public function postJson($uri, $data, $options = [])
+    /**
+     * Http post.
+     * @param  string $uri
+     * @param  array  $params
+     * @return mixed
+     */
+    protected function post($uri, $params = [])
     {
-        return $this->request('POST', $uri, [
-            'json' => $data,
-        ] + $options);
+        $response = $this->guzzle->request('POST', $uri, [
+            'form_params' => array_merge($attributes = $this->buildRequestAttributes($params), [
+                'sign' => $this->signature($attributes)
+            ]),
+        ]);
+
+        return $this->castResponseToArray($response);
     }
 
-    public function request($method, $uri, $options)
+    /**
+     * @param  \GuzzleHttp\Psr7\Response $response
+     * @return array
+     */
+    protected function castResponseToArray($response)
     {
-        return $this->getHttpClient()->request($method, $uri, $options);
+        $content = (string) $response->getBody();
+
+        return json_decode($content, true);
     }
 
-    protected function getHttpClient()
+    /**
+     * @param  array $params
+     * @return array
+     */
+    protected function buildRequestAttributes($params)
     {
-        return $this->httpClient ?: $this->httpClient = new Client(['http_errors' => false]);
+        return [
+            'app_id' => (int) $this->config['app_id'],
+            'time_stamp' => time(),
+            'nonce_str' => uniqid(),
+        ] + $params;
+    }
+
+    /**
+     * @param  array $params
+     * @return string
+     */
+    protected function signature($params)
+    {
+        ksort($params);
+        $params = array_filter($params);
+
+        $params['app_key'] = $this->config['app_key'];
+
+        return strtoupper(
+            md5(http_build_query($params))
+        );
     }
 }

@@ -2,55 +2,41 @@
 
 namespace Cblink\TencentAI;
 
-use Adbar\Dot;
-use Pimple\Container;
+use GuzzleHttp\Client;
 
-class Application extends Container
+class Application
 {
+    use MakesHttpRequests,
+        Actions\VisionPorn;
+
     /**
      * @var array
      */
-    protected $providers = [
-        Ocr\OcrServiceProvider::class,
-    ];
+    protected $config;
+
+    /**
+     * @var \GuzzleHttp\Client
+     */
+    protected $guzzle;
 
     /**
      * @param array $config
      */
     public function __construct($config)
     {
-        parent::__construct();
+        $this->config = $config;
 
-        $this['config'] = function () use ($config) {
-            return new Dot($config);
-        };
-
-        $this->registerProviders();
+        $this->guzzle = new Client([
+            'base_uri' => 'https://api.ai.qq.com',
+        ]);
     }
 
     /**
-     * Registers the providers.
+     * @param  string $image
+     * @return string
      */
-    protected function registerProviders()
+    protected function transformBase64Image($image)
     {
-        foreach ($this->providers as $provider) {
-            parent::register(new $provider());
-        }
-
-        $this['credentials'] = function ($app) {
-            return new Credentials($app);
-        };
-    }
-
-    /**
-     * Magic get access.
-     *
-     * @param  string $id
-     *
-     * @return mixed
-     */
-    public function __get($id)
-    {
-        return $this->offsetGet($id);
+        return base64_encode($image);
     }
 }
