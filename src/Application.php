@@ -37,6 +37,10 @@ class Application
      */
     protected function transformBase64Image($image)
     {
+        if (substr($image, 0, 4) === 'http') {
+            $image = file_get_contents($image);
+        }
+
         return base64_encode($image);
     }
 }
